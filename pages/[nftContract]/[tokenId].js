@@ -13,7 +13,7 @@ import styles from "../../styles/Details.module.css";
 export default function NFTDetails() {
 
     const router = useRouter();
-    const nftAddress = router.query.nftAddress;
+    const nftAddress = router.query.nftContract;
     const tokenId = router.query.tokenId;
 
     const [ listing, setListing ] = useState();
@@ -120,8 +120,8 @@ export default function NFTDetails() {
             const cancelTx = await marketPlaceContract.cancelListing(nftAddress, tokenId);
             await cancelTx.wait();
             window.alert("Listing canceled");
-            return router.push("/");
             setCancelling(false);
+            return router.push("/");
         } catch(err) {
             console.error(err);
         }
@@ -146,7 +146,7 @@ export default function NFTDetails() {
     }
 
     useEffect(() => {
-        if(router.query.nftAddress && router.query.tokenId && signer) {
+        if(router.query.nftContract && router.query.tokenId && signer) {
             Promise.all([fetchListing(), fetchNFTDetails()]).finally(() => {
                 setLoading(false);
             });
@@ -168,18 +168,17 @@ export default function NFTDetails() {
                     {name} - #{tokenId}
                     </b>
                 </span>
-                <span>Price: {formatEther(listing.price)} CELO</span>
+                <span>Price: {formatEther(listing ? listing.price : 0)} CELO</span>
                 <span>
                     <a
-                    href={`https://alfajores.celoscan.io/address/${listing.seller}`}
+                    href={`https://alfajores.celoscan.io/address/${listing ? listing.seller : ''}`}
                     target="_blank"
-                    rel="noreferrer"
                     >
                     Seller: {" "}
-                    {isOwner ? "You" : listing.seller.substring(0, 6) + "..."}
+                    {isOwner ? "You" : (listing ? listing.seller.substring(0, 6) + "..." : '')}
                     </a>
                 </span>
-                <span>Status: {listing.buyer === null ? "Active" : "Sold"}</span>
+                <span>Status: {listing ? (listing.buyer === null ? "Active" : "Sold") : ''}</span>
                 </div>
     
                 <div className={styles.options}>
@@ -187,11 +186,10 @@ export default function NFTDetails() {
                     <span>
                     Listing has been sold to{" "}
                     <a
-                        href={`https://alfajores.celoscan.io/address/${listing.buyer}`}
+                        href={`https://alfajores.celoscan.io/address/${listing ? listing.buyer : ''}`}
                         target="_blank"
-                        rel="noreferrer"
                     >
-                        {listing.buyer}
+                        {listing ? listing.buyer : ''}
                     </a>
                     </span>
                 )}
